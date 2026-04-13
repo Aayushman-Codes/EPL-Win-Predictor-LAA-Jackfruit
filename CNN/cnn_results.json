@@ -1,0 +1,37 @@
+{
+  "model": "CNN from Scratch (NumPy only)",
+  "architecture": "Conv1D(1\u219216,k=3) \u2192 Conv1D(16\u219232,k=3) \u2192 GlobalAvgPool \u2192 FC(64) \u2192 FC(32) \u2192 FC(1)",
+  "dataset": "EPL 2000-2019",
+  "n_samples": 6840,
+  "train_size": 4788,
+  "val_size": 1026,
+  "test_size": 1026,
+  "epochs": 80,
+  "final_train_loss": 0.6539,
+  "final_val_loss": 0.6732,
+  "test_evaluation": {
+    "accuracy": 0.6101,
+    "precision": 0.5677,
+    "recall": 0.7137,
+    "f1": 0.6324,
+    "auc_roc": 0.6633,
+    "mse": 0.233852,
+    "conf_matrix": [
+      [
+        282,
+        262
+      ],
+      [
+        138,
+        344
+      ]
+    ],
+    "comparable_metrics": {
+      "accuracy": 0.6101,
+      "f1": 0.6324,
+      "auc_roc": 0.6633,
+      "precision": 0.5677,
+      "recall": 0.7137
+    }
+  }
+}

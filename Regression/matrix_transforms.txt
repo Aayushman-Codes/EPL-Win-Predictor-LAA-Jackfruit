@@ -1,0 +1,25 @@
+=== Matrix Transformations Used in This Notebook ===
+
+--- Transform 1 — Feature Standardisation ---
+  description: X_scaled = (X_raw - mu) / sigma
+  type: Affine matrix transform (column-wise)
+  input_shape: [6840, 18]
+  output_shape: [6840, 18]
+
+--- Transform 2 — SVD Projection ---
+  description: X_proj = X_scaled @ Vt[:k].T  — project onto top-k right singular vectors
+  type: Matrix multiplication (dimensionality reduction)
+  input_shape: [5472, 18]
+  output_shape: [5472, 10]
+  note: X_train = U Σ Vᵀ decomposed; Vt rows are orthonormal basis of feature space
+
+--- Transform 3 — Ridge Normal Equations ---
+  description: beta = (XᵀX + λI)⁻¹ Xᵀy
+  type: Matrix inversion of (p+1)×(p+1) system
+  note: λ regularisation shifts eigenvalues, ensuring invertibility
+
+--- Vectors/Tensors used ---
+  weight vector beta: 1D numpy array of shape (p+1,) for all regression models
+  gradient vector: 1D array (p+1,) updated each epoch in logistic regression
+  singular values S: 1D array (min(n,p),) from SVD — represents scale of each component
+

@@ -1,0 +1,64 @@
+{
+  "model": "Linear + Logistic Regression (from scratch)",
+  "dataset": "EPL 2000-2019",
+  "n_samples": 6840,
+  "train_size": 5472,
+  "test_size": 1368,
+  "regularisation": "Ridge L2 lambda=0.1",
+  "linear_regression": {
+    "Home Goals (FTHG)": {
+      "MSE": 1.4989,
+      "RMSE": 1.2243,
+      "MAE": 0.9662,
+      "R2": 0.0822
+    },
+    "Away Goals (FTAG)": {
+      "MSE": 1.0891,
+      "RMSE": 1.0436,
+      "MAE": 0.8317,
+      "R2": 0.0593
+    },
+    "Total Goals": {
+      "MSE": 2.6902,
+      "RMSE": 1.6402,
+      "MAE": 1.3069,
+      "R2": -0.0107
+    },
+    "Goal Difference": {
+      "MSE": 2.5007,
+      "RMSE": 1.5814,
+      "MAE": 1.2238,
+      "R2": 0.1435
+    }
+  },
+  "logistic_regression": {
+    "task": "Binary classification \u2014 Home Win prediction",
+    "accuracy": 0.6308,
+    "precision": 0.6227,
+    "recall": 0.5259,
+    "f1": 0.5702,
+    "auc_roc": 0.679,
+    "conf_matrix": [
+      [
+        528,
+        203
+      ],
+      [
+        302,
+        335
+      ]
+    ],
+    "comparable_metrics": {
+      "accuracy": 0.6308,
+      "f1": 0.5702,
+      "auc_roc": 0.679,
+      "precision": 0.6227,
+      "recall": 0.5259
+    }
+  },
+  "svd_analysis": {
+    "n_components": 18,
+    "variance_top5": 0.755,
+    "variance_top10": 0.9409
+  }
+}

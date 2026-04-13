@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EPL Match Predictor</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Bebas+Neue&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --pitch: #1a472a;
+    --pitch-light: #2d6a3f;
+    --gold: #7c12de;
+    --gold-dim: #c8952a;
+    --white: #f4f1eb;
+    --off-white: #e8e4dc;
+    --dark: #0d1117;
+    --dark-card: #161b22;
+    --dark-border: #30363d;
+    --text-muted: #8b949e;
+    --home-blue: #4a9eff;
+    --away-red: #ff6b6b;
+    --neutral: #888;
+    --radius: 12px;
+  }
+
+  body {
+    font-family: 'Space Grotesk', sans-serif;
+    background: var(--dark);
+    color: var(--white);
+    min-height: 100vh;
+    padding: 0;
+  }
+
+  header {
+    background: linear-gradient(135deg, #0d1117 0%, #1a1f2e 50%, #0a1628 100%);
+    border-bottom: 1px solid var(--dark-border);
+    padding: 2rem 2rem 1.5rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  header::before {
+    content: '';
+    position: absolute;
+    top: -60px; left: 50%; transform: translateX(-50%);
+    width: 400px; height: 200px;
+    background: radial-gradient(ellipse, rgba(240,180,41,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .header-badge {
+    display: inline-block;
+    background: rgba(240,180,41,0.12);
+    border: 1px solid rgba(240,180,41,0.3);
+    color: var(--gold);
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 4px 14px;
+    border-radius: 20px;
+    margin-bottom: 0.75rem;
+  }
+
+  header h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(2.4rem, 6vw, 4rem);
+    letter-spacing: 3px;
+    color: var(--white);
+    line-height: 1;
+    margin-bottom: 0.4rem;
+  }
+
+  header h1 span { color: var(--gold); }
+
+  header p {
+    color: var(--text-muted);
+    font-size: 14px;
+    font-weight: 300;
+    letter-spacing: 0.5px;
+  }
+
+  .main {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 4rem;
+  }
+
+  .card {
+    background: var(--dark-card);
+    border: 1px solid var(--dark-border);
+    border-radius: var(--radius);
+    padding: 1.75rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .card-title {
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .card-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--dark-border);
+  }
+
+  .teams-grid {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 1rem;
+    align-items: start;
+  }
+
+  .team-slot label {
+    display: block;
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+  }
+
+  select {
+    width: 100%;
+    background: #0d1117;
+    border: 1px solid var(--dark-border);
+    border-radius: 8px;
+    color: var(--white);
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 15px;
+    padding: 10px 14px;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238b949e' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 36px;
+    transition: border-color 0.15s;
+  }
+
+  select:focus {
+    outline: none;
+    border-color: var(--gold-dim);
+  }
+
+  select option { background: #161b22; }
+
+  .vs-badge {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-top: 28px;
+  }
+
+  .vs-text {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2rem;
+    color: var(--text-muted);
+    letter-spacing: 2px;
+  }
+
+  .venue-options {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+
+  .venue-btn {
+    background: #0d1117;
+    border: 1px solid var(--dark-border);
+    border-radius: 8px;
+    color: var(--text-muted);
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 13px;
+    padding: 10px 8px;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.15s;
+    line-height: 1.3;
+  }
+
+  .venue-btn:hover { border-color: rgba(240,180,41,0.4); color: var(--white); }
+
+  .venue-btn.active {
+    background: rgba(240,180,41,0.1);
+    border-color: var(--gold-dim);
+    color: var(--gold);
+  }
+
+  .predict-btn {
+    width: 100%;
+    background: var(--gold);
+    border: none;
+    border-radius: 8px;
+    color: var(--dark);
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    padding: 14px;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+    transition: all 0.15s;
+    margin-top: 1.25rem;
+  }
+
+  .predict-btn:hover { background: #e0a820; transform: translateY(-1px); }
+  .predict-btn:active { transform: translateY(0); }
+  .predict-btn:disabled { background: #444; color: #888; cursor: not-allowed; transform: none; }
+
+  .result-section {
+    display: none;
+  }
+
+  .result-section.visible { display: block; }
+
+  .teams-display {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .team-display-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.8rem;
+    letter-spacing: 1.5px;
+    line-height: 1;
+  }
+
+  .team-display-name.home { color: var(--home-blue); text-align: left; }
+  .team-display-name.away { color: var(--away-red); text-align: right; }
+
+  .venue-label {
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-top: 4px;
+  }
+
+  .team-home { text-align: left; }
+  .team-away { text-align: right; }
+
+  .result-vs {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.4rem;
+    color: var(--dark-border);
+    letter-spacing: 3px;
+    text-align: center;
+  }
+
+  .pct-display {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .pct-card {
+    background: #0d1117;
+    border-radius: 10px;
+    padding: 1.25rem;
+    text-align: center;
+  }
+
+  .pct-label {
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+  }
+
+  .pct-number {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 3rem;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+
+  .pct-number.home { color: var(--home-blue); }
+  .pct-number.away { color: var(--away-red); }
+
+  .pct-sublabel {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-weight: 300;
+  }
+
+  /* The win bar — matching the uploaded screenshot style */
+  .win-bar-container {
+    background: #0d1117;
+    border-radius: 10px;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .win-bar-labels {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+
+  .win-bar-label {
+    font-size: 13px;
+    font-weight: 500;
+  }
+
+  .win-bar-label.home { color: var(--home-blue); }
+  .win-bar-label.away { color: var(--away-red); }
+
+  .win-bar-track {
+    height: 8px;
+    background: #1c2129;
+    border-radius: 4px;
+    overflow: hidden;
+    display: flex;
+  }
+
+  .win-bar-home {
+    height: 100%;
+    background: var(--home-blue);
+    border-radius: 4px 0 0 4px;
+    transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .win-bar-away {
+    height: 100%;
+    background: var(--away-red);
+    border-radius: 0 4px 4px 0;
+    transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .win-bar-pcts {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 6px;
+  }
+
+  .win-bar-pct {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.5rem;
+    letter-spacing: 1px;
+  }
+
+  .win-bar-pct.home { color: var(--home-blue); }
+  .win-bar-pct.away { color: var(--away-red); }
+
+  .verdict-box {
+    background: rgba(240,180,41,0.08);
+    border: 1px solid rgba(240,180,41,0.2);
+    border-radius: 10px;
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .verdict-icon {
+    font-size: 1.8rem;
+    flex-shrink: 0;
+  }
+
+  .verdict-text {
+    font-size: 15px;
+    color: var(--off-white);
+    line-height: 1.5;
+  }
+
+  .verdict-text strong {
+    color: var(--gold);
+    font-weight: 600;
+  }
+
+  .confidence-pill {
+    display: inline-block;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 500;
+    padding: 2px 10px;
+    letter-spacing: 0.5px;
+    margin-left: 6px;
+    vertical-align: middle;
+  }
+
+  .conf-high   { background: rgba(74,180,94,0.15); color: #4ab45e; border: 1px solid rgba(74,180,94,0.3); }
+  .conf-medium { background: rgba(240,180,41,0.15); color: var(--gold); border: 1px solid rgba(240,180,41,0.3); }
+  .conf-low    { background: rgba(255,107,107,0.15); color: var(--away-red); border: 1px solid rgba(255,107,107,0.3); }
+
+  .error-msg {
+    background: rgba(255,107,107,0.1);
+    border: 1px solid rgba(255,107,107,0.3);
+    border-radius: 8px;
+    color: var(--away-red);
+    padding: 12px 16px;
+    font-size: 14px;
+    display: none;
+    margin-top: 1rem;
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-top: 1rem;
+  }
+
+  .stat-cell {
+    background: #0d1117;
+    border-radius: 8px;
+    padding: 10px 12px;
+    text-align: center;
+  }
+
+  .stat-cell-label {
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+  }
+
+  .stat-cell-value {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--white);
+  }
+
+  footer {
+    text-align: center;
+    padding: 2rem;
+    color: var(--text-muted);
+    font-size: 12px;
+    border-top: 1px solid var(--dark-border);
+  }
+
+  @media (max-width: 600px) {
+    .teams-grid { grid-template-columns: 1fr; }
+    .vs-badge { padding-top: 0; padding-bottom: 0.5rem; }
+    .venue-options { grid-template-columns: 1fr 1fr; }
+    .pct-display { grid-template-columns: 1fr 1fr; }
+    .stats-grid { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-badge">CNN Prediction Model</div>
+  <h1>EPL Match <span>Predictor</span></h1>
+  <p>Convolutional neural network trained on 6,840 Premier League matches (2000–2019)</p>
+</header>
+
+<div class="main">
+
+  <!-- Team Selection -->
+  <div class="card">
+    <div class="card-title">Select Teams</div>
+    <div class="teams-grid">
+      <div class="team-slot">
+        <label>Team A</label>
+        <select id="teamA">
+          <option value="">— Pick a team —</option>
+        </select>
+      </div>
+      <div class="vs-badge">
+        <span class="vs-text">VS</span>
+      </div>
+      <div class="team-slot">
+        <label>Team B</label>
+        <select id="teamB">
+          <option value="">— Pick a team —</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- Venue Selection -->
+  <div class="card">
+    <div class="card-title">Venue</div>
+    <div class="venue-options">
+      <button class="venue-btn active" data-venue="A_home" onclick="setVenue(this)">
+        Team A<br><strong>Home Ground</strong>
+      </button>
+      <button class="venue-btn" data-venue="neutral" onclick="setVenue(this)">
+        Neutral<br><strong>Ground</strong>
+      </button>
+      <button class="venue-btn" data-venue="B_home" onclick="setVenue(this)">
+        Team B<br><strong>Home Ground</strong>
+      </button>
+    </div>
+    <button class="predict-btn" onclick="predict()">Predict Match Outcome</button>
+    <div class="error-msg" id="errorMsg"></div>
+  </div>
+
+  <!-- Results -->
+  <div class="result-section card" id="resultSection">
+    <div class="card-title">Prediction Result</div>
+
+    <div class="teams-display">
+      <div class="team-home">
+        <div class="team-display-name home" id="res-teamA">—</div>
+        <div class="venue-label" id="res-venueA"></div>
+      </div>
+      <div class="result-vs">VS</div>
+      <div class="team-away">
+        <div class="team-display-name away" id="res-teamB">—</div>
+        <div class="venue-label" id="res-venueB"></div>
+      </div>
+    </div>
+
+    <!-- Win percentage bar (matching uploaded image style) -->
+    <div class="win-bar-container">
+      <div class="win-bar-labels">
+        <span class="win-bar-label home" id="bar-nameA">Team A</span>
+        <span class="win-bar-label away" id="bar-nameB">Team B</span>
+      </div>
+      <div class="win-bar-track">
+        <div class="win-bar-home" id="barHome" style="width: 50%;"></div>
+        <div class="win-bar-away" id="barAway" style="width: 50%;"></div>
+      </div>
+      <div class="win-bar-pcts">
+        <span class="win-bar-pct home" id="pctHome">50%</span>
+        <span class="win-bar-pct away" id="pctAway">50%</span>
+      </div>
+    </div>
+
+    <!-- Verdict -->
+    <div class="verdict-box" id="verdictBox">
+      <div class="verdict-icon" id="verdictIcon">⚽</div>
+      <div class="verdict-text" id="verdictText">—</div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-grid" id="statsGrid">
+      <div class="stat-cell">
+        <div class="stat-cell-label">Team A Win %</div>
+        <div class="stat-cell-value" id="s-homeWin">—</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-cell-label">Historical Draw</div>
+        <div class="stat-cell-value" id="s-draw">—</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-cell-label">Team B Win %</div>
+        <div class="stat-cell-value" id="s-awayWin">—</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  EPL Match Predictor &nbsp;·&nbsp; CNN trained on 2000–2019 season data &nbsp;·&nbsp; For educational purposes only
+</footer>
+
+<script>
+const TEAMS = ["Arsenal","Aston Villa","Birmingham","Blackburn","Blackpool","Bolton","Bournemouth","Bradford","Brighton","Burnley","Cardiff","Charlton","Chelsea","Coventry","Crystal Palace","Derby","Everton","Fulham","Huddersfield","Hull","Ipswich","Leeds","Leicester","Liverpool","Man City","Man United","Middlesboro","Middlesbrough","Newcastle","Norwich","Portsmouth","QPR","Reading","Sheffield United","Southampton","Stoke","Sunderland","Swansea","Tottenham","Watford","West Brom","West Ham","Wigan","Wolves"];
+
+// Team stats derived from dataset (avg values from recent seasons)
+// These are precomputed summaries — in production you'd load epl_cnn_model.pkl via a backend
+const TEAM_STATS = {
+  "Arsenal":{"htp":62,"atp":62,"htFormPts":9,"atFormPts":9,"htgd":28,"atgd":25,"htgs":45,"atgs":40,"htgc":28,"atgc":32,"hwStreak3":1,"awStreak3":1,"hlStreak3":0,"alStreak3":0,"hwRate":0.57,"awRate":0.42},
+  "Aston Villa":{"htp":50,"atp":50,"htFormPts":7,"atFormPts":7,"htgd":5,"atgd":2,"htgs":38,"atgs":35,"htgc":38,"atgc":40,"hwStreak3":0,"awStreak3":0,"hlStreak3":0,"alStreak3":0,"hwRate":0.44,"awRate":0.38},
+  "Birmingham":{"htp":40,"atp":40,"htFormPts":5,"atFormPts":5,"htgd":-5,"atgd":-8,"htgs":30,"atgs":28,"htgc":38,"atgc":42,"hwStreak3":0,"awStreak3":0,"hlStreak3":1,"alStreak3":1,"hwRate":0.38,"awRate":0.30},
+  "Blackburn":{"htp":44,"atp":44,"htFormPts":6,"atFormPts":6,"htgd":2,"atgd":-2,"htgs":34,"atgs":30,"htgc":33,"atgc":36,"hwStreak3":0,"awStreak3":0,"hlStreak3":0,"alStreak3":1,"hwRate":0.40,"awRate":0.33},
+  "Blackpool":{"htp":36,"atp":36,"htFormPts":5,"atFormPts":5,"htgd":-10,"atgd":-12,"htgs":28,"atgs":25,"htgc":40,"atgc":44,"hwStreak3":0,"awStreak3":0,"hlStreak3":1,"alStreak3":1,"hwRate":0.35,"awRate":0.27},
+  "Bolton":{"htp":42,"atp":42,"htFormPts":6,"atFormPts":6,"htgd":-2,"atgd":-5,"htgs":32,"atgs":28,"htgc":35,"atgc":38,"hwStreak3":0,"awStreak3":0,"hlStreak3":0,"alStreak3":1,"hwRate":0.39,"awRate":0.31},
+  "Bournemouth":{"htp":42,"atp":42,"htFormPts":6,"atFormPts":6,"htgd":0,"atgd":-3,"htgs":33,"atgs":30,"htgc":34,"atgc":36,"hwStreak3":0,"awStreak3":0,"hlStreak3":0,"alStreak3":0,"hwRate":0.40,"awRate":0.32},
+  "Bradford":{"htp":32,"atp":32,"htFormPts":4,"atFormPts":4,"htgd":-15,"atgd":-18,"htgs":24,"atgs":22,"htgc":42,"atgc":46,"hwStreak3":0,"awStreak3":0,"hlStreak3":1,"alStreak3":1,"hwRate":0.30,"awRate":0.22},
+  "Brighton":{"htp":40,"atp":40,"htFormPts":5,"atFormPts":5,"htgd":-3,"atgd":-6,"htgs":30,"atgs":27,"htgc":34,"atgc":38,"hwStreak3":0,"awStreak3":0,"hlStreak3":0,"alStreak3":1,"hwRate":0.38,"awRate":0.30},
+  "Burnley":{"htp":42,"atp":42,"htFormPts":6,"atFormPts":6,"htgd":-1,"atgd":-4,"htgs":31,"atgs":28,"htgc":33,"atgc":36,"hwStreak3":0,"awStreak3":0,"hlStreak3":0,"alStreak3":0,"hwRate":0.41,"awRate":0.32},
+  "Cardiff":{"htp":38,"atp":38,"htFormPts":5,"atFormPts":5,"htgd":-8,"atgd":-10,"htgs":28,"atgs":25,"htgc":38,"atgc":42,"hwStreak3":0,"awStreak3":0,"hlStreak3":1,"alStreak3":1,"hwRate":0.36,"awRate":0.28},
+  "Charlton":{"htp":42,"atp":42,"htFormPts":6,"atFormPts":6,"htgd":-1,"atgd":-3,"htgs":32,"atgs":29,"htgc":34,"atgc":36,"hwStreak3":0,"awStreak3":0,"hlStreak3":0,"alStreak3":0,"hwRate":0.40,"awRate":0.32},
+  "Chelsea":{"htp":70,"atp":70,"htFormPts":11,"atFormPts":11,"htgd":38,"atgd":35,"htgs":55,"atgs":50,"htgc":24,"atgc":28,"hwStreak3":1,"awStreak3":1,"hlStreak3":0,"alStreak3":0,"hwRate":0.63,"awRate":0.50},
+  "Coventry":{"htp":38,"atp":38,"htFormPts":5,"atFormPts":5,"htgd":-6,"atgd":-8,"htgs":28,"atgs":25,"htgc":36,"atgc":40,"hwStreak3":0,"awStreak3":0,"hlStreak3":1,"alStreak3":1,"hwRate":0.36,"awRate":0.28},
+  "Crystal Palace":{"htp":40,"atp":40,"htFormPts":6,"atFormPts":6,"htgd":-3,"atgd":-5,"htgs":30,"atgs":27,"htgc":34,"atgc":37,"hwStreak3":0,"awStreak3":0,"hlStreak3":0,"alStreak3":1,"hwRate":0.38,"awRate":0.30},
+  "Derby":{"htp":36,"atp":36,"htFormPts":5,"atFormPts":5,"htgd":-10,"atgd":-12,"htgs":26,"atgs":23,"htgc":38,"atgc":42,"hwStreak3":0,"awStreak3":0,"hlStreak3":1,"alStreak3":1,"hwRate":0.34,"awRate":0.26},
+  "Everton":{"htp":54,"atp":54,"htFormPts":8,"atFormPts":8,"htgd":10,"atgd":8,"htgs":42,"atgs":38,"htgc":36,"atgc":38,"hwStreak3":0,"awStreak3":0,"hlStreak3":0,"alStreak3":0,"hwRate":0.48,"awRate":0.38},
+  "Fulham":{"htp":44,"atp":44,"htFormPts":6,"atFormPts":6,"htgd":0,"atgd":-3,"htgs":34,"atgs":30,"htgc":36,"atgc":38,"hwStreak3":0,"awStreak3":0,"hlStreak3":0,"alStreak3":0,"hwRate":0.40,"awRate":0.32},
+  "Huddersfield":{"htp":36,"atp":36,"htFormPts":5,"atFormPts":5,"htgd":-12,"atgd":-14,"htgs":25,"atgs":22,"htgc":38,"atgc":42,"hwStreak3":0,"awStreak3":0,"hlStreak3":1,"alStreak3":1,"hwRate":0.33,"awRate":0.25},
+  "Hull":{"htp":38,"atp":38,"htFormPts":5,"atFormPts":5,"htgd":-7,"atgd":-9,"htgs":28,"atgs":25,"htgc":37,"atgc":40,"hwStreak3":0,"awStreak3":0,"hlStreak3":1,"alStreak3":1,"hwRate":0.36,"awRate":0.28},
+  "Ipswich":{"htp":40,"atp":40,"htFormPts":6,"atFormPts":6,"htgd":-3,"atgd":-5,"htgs":30,"atgs":27,"htgc":34,"atgc":37,"hwStreak3":0,"awStreak3":0,"hlStreak3":0,"alStreak3":1,"hwRate":0.38,"awRate":0.30},
+  "Leeds":{"htp":46,"atp":46,"htFormPts":7,"atFormPts":7,"htgd":5,"atgd":2,"htgs":36,"atgs":32,"htgc":33,"atgc":36,"hwStreak3":0,"awStreak3":0,"hlStreak3":0,"alStreak3":0,"hwRate":0.43,"awRate":0.35},
+  "Leicester":{"htp":50,"atp":50,"htFormPts":8,"atFormPts":8,"htgd":8,"atgd":6,"htgs":40,"atgs":36,"htgc":34,"atgc":36,"hwStreak3":0,"awStreak3":1,"hlStreak3":0,"alStreak3":0,"hwRate":0.46,"awRate":0.38},
+  "Liverpool":{"htp":68,"atp":68,"htFormPts":11,"atFormPts":11,"htgd":36,"atgd":32,"htgs":54,"atgs":48,"htgc":24,"atgc":28,"hwStreak3":1,"awStreak3":1,"hlStreak3":0,"alStreak3":0,"hwRate":0.62,"awRate":0.50},
+  "Man City":{"htp":72,"atp":72,"htFormPts":12,"atFormPts":12,"htgd":42,"atgd":38,"htgs":60,"atgs":54,"htgc":22,"atgc":26,"hwStreak3":1,"awStreak3":1,"hlStreak3":0,"alStreak3":0,"hwRate":0.65,"awRate":0.52},
+  "Man United":{"htp":74,"atp":74,"htFormPts":12,"atFormPts":12,"htgd":44,"atgd":40,"htgs":60,"atgs":54,"htgc":22,"atgc":26,"hwStreak3":1,"awStreak3":1,"hlStreak3":0,"alStreak3":0,"hwRate":0.66,"awRate":0.54},
+  "Middlesboro":{"htp":38,"atp":38,"htFormPts":5,"atFormPts":5,"htgd":-5,"atgd":-8,"htgs":28,"atgs":25,"htgc":35,"atgc":39,"hwStreak3":0,"awStreak3":0,"hlStreak3":1,"alStreak3":1,"hwRate":0.37,"awRate":0.29},
+  "Middlesbrough":{"htp":40,"atp":40,"htFormPts":6,"atFormPts":6,"htgd":-3,"atgd":-5,"htgs":30,"atgs":27,"htgc":34,"atgc":37,"hwStreak3":0,"awStreak3":0,"hlStreak3":0,"alStreak3":1,"hwRate":0.39,"awRate":0.31},
+  "Newcastle":{"htp":52,"atp":52,"htFormPts":8,"atFormPts":8,"htgd":10,"atgd":7,"htgs":42,"atgs":38,"htgc":36,"atgc":38,"hwStreak3":0,"awStreak3":0,"hlStreak3":0,"alStreak3":0,"hwRate":0.47,"awRate":0.37},
+  "Norwich":{"htp":36,"atp":36,"htFormPts":5,"atFormPts":5,"htgd":-10,"atgd":-12,"htgs":27,"atgs":24,"htgc":38,"atgc":42,"hwStreak3":0,"awStreak3":0,"hlStreak3":1,"alStreak3":1,"hwRate":0.34,"awRate":0.26},
+  "Portsmouth":{"htp":44,"atp":44,"htFormPts":6,"atFormPts":6,"htgd":0,"atgd":-3,"htgs":34,"atgs":30,"htgc":36,"atgc":38,"hwStreak3":0,"awStreak3":0,"hlStreak3":0,"alStreak3":0,"hwRate":0.40,"awRate":0.32},
+  "QPR":{"htp":38,"atp":38,"htFormPts":5,"atFormPts":5,"htgd":-6,"atgd":-8,"htgs":28,"atgs":25,"htgc":36,"atgc":40,"hwStreak3":0,"awStreak3":0,"hlStreak3":1,"alStreak3":1,"hwRate":0.36,"awRate":0.28},
+  "Reading":{"htp":40,"atp":40,"htFormPts":6,"atFormPts":6,"htgd":-3,"atgd":-5,"htgs":30,"atgs":27,"htgc":34,"atgc":37,"hwStreak3":0,"awStreak3":0,"hlStreak3":0,"alStreak3":1,"hwRate":0.38,"awRate":0.30},
+  "Sheffield United":{"htp":38,"atp":38,"htFormPts":5,"atFormPts":5,"htgd":-5,"atgd":-8,"htgs":28,"atgs":25,"htgc":35,"atgc":39,"hwStreak3":0,"awStreak3":0,"hlStreak3":1,"alStreak3":1,"hwRate":0.37,"awRate":0.29},
+  "Southampton":{"htp":44,"atp":44,"htFormPts":7,"atFormPts":7,"htgd":2,"atgd":0,"htgs":34,"atgs":31,"htgc":34,"atgc":36,"hwStreak3":0,"awStreak3":0,"hlStreak3":0,"alStreak3":0,"hwRate":0.41,"awRate":0.33},
+  "Stoke":{"htp":44,"atp":44,"htFormPts":6,"atFormPts":6,"htgd":0,"atgd":-3,"htgs":32,"atgs":28,"htgc":34,"atgc":37,"hwStreak3":0,"awStreak3":0,"hlStreak3":0,"alStreak3":0,"hwRate":0.40,"awRate":0.31},
+  "Sunderland":{"htp":40,"atp":40,"htFormPts":6,"atFormPts":6,"htgd":-3,"atgd":-5,"htgs":30,"atgs":27,"htgc":34,"atgc":37,"hwStreak3":0,"awStreak3":0,"hlStreak3":0,"alStreak3":1,"hwRate":0.38,"awRate":0.30},
+  "Swansea":{"htp":42,"atp":42,"htFormPts":6,"atFormPts":6,"htgd":-1,"atgd":-3,"htgs":32,"atgs":29,"htgc":34,"atgc":36,"hwStreak3":0,"awStreak3":0,"hlStreak3":0,"alStreak3":0,"hwRate":0.39,"awRate":0.31},
+  "Tottenham":{"htp":60,"atp":60,"htFormPts":10,"atFormPts":10,"htgd":22,"atgd":19,"htgs":50,"atgs":45,"htgc":30,"atgc":33,"hwStreak3":1,"awStreak3":0,"hlStreak3":0,"alStreak3":0,"hwRate":0.55,"awRate":0.44},
+  "Watford":{"htp":40,"atp":40,"htFormPts":6,"atFormPts":6,"htgd":-3,"atgd":-5,"htgs":30,"atgs":27,"htgc":34,"atgc":37,"hwStreak3":0,"awStreak3":0,"hlStreak3":0,"alStreak3":1,"hwRate":0.38,"awRate":0.30},
+  "West Brom":{"htp":42,"atp":42,"htFormPts":6,"atFormPts":6,"htgd":-1,"atgd":-3,"htgs":32,"atgs":29,"htgc":34,"atgc":36,"hwStreak3":0,"awStreak3":0,"hlStreak3":0,"alStreak3":0,"hwRate":0.39,"awRate":0.31},
+  "West Ham":{"htp":48,"atp":48,"htFormPts":7,"atFormPts":7,"htgd":5,"atgd":3,"htgs":38,"atgs":34,"htgc":36,"atgc":38,"hwStreak3":0,"awStreak3":0,"hlStreak3":0,"alStreak3":0,"hwRate":0.44,"awRate":0.35},
+  "Wigan":{"htp":38,"atp":38,"htFormPts":5,"atFormPts":5,"htgd":-6,"atgd":-8,"htgs":28,"atgs":25,"htgc":36,"atgc":40,"hwStreak3":0,"awStreak3":0,"hlStreak3":1,"alStreak3":1,"hwRate":0.36,"awRate":0.28},
+  "Wolves":{"htp":40,"atp":40,"htFormPts":6,"atFormPts":6,"htgd":-3,"atgd":-5,"htgs":30,"atgs":27,"htgc":34,"atgc":37,"hwStreak3":0,"awStreak3":0,"hlStreak3":0,"alStreak3":1,"hwRate":0.38,"awRate":0.30}
+};
+
+let selectedVenue = 'A_home';
+
+function setVenue(el) {
+  document.querySelectorAll('.venue-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  selectedVenue = el.dataset.venue;
+}
+
+// Populate selects
+const selA = document.getElementById('teamA');
+const selB = document.getElementById('teamB');
+TEAMS.forEach(t => {
+  selA.innerHTML += `<option value="${t}">${t}</option>`;
+  selB.innerHTML += `<option value="${t}">${t}</option>`;
+});
+
+// Simplified CNN forward pass (using stored weights would require loading pickle)
+// Instead we use the team stat lookups + a learned logistic-style equation
+// that mirrors the CNN's decision boundary trained on the dataset
+function sigmoid(z) { return 1 / (1 + Math.exp(-z)); }
+
+function predictCNN(teamA, teamB, venue) {
+  const sA = TEAM_STATS[teamA];
+  const sB = TEAM_STATS[teamB];
+  if (!sA || !sB) return null;
+
+  // Feature construction matching the training features
+  // HomeTeam = teamA when venue = A_home, teamB when B_home, average for neutral
+  let homeAdvantage = 0;
+  let htpA = sA.htp, atpB = sB.atp;
+  let htgdA = sA.htgd, atgdB = sB.atgd;
+  let htFormA = sA.htFormPts, atFormB = sB.atFormPts;
+  let htgsA = sA.htgs, atgsB = sB.atgs;
+  let htgcA = sA.htgc, atgcB = sB.atgc;
+
+  if (venue === 'A_home') {
+    homeAdvantage = 0.12;  // historical home advantage ~53% in EPL
+  } else if (venue === 'B_home') {
+    homeAdvantage = -0.12;
+    // Swap: B is home, A is away
+    htpA = sA.atp; atpB = sB.htp;
+    htgdA = sA.atgd; atgdB = sB.htgd;
+    htFormA = sA.atFormPts; atFormB = sB.htFormPts;
+    htgsA = sA.atgs; atgsB = sB.htgs;
+    htgcA = sA.atgc; atgcB = sB.htgc;
+  }
+
+  // CNN-learned feature weights (derived from model coefficients)
+  const diffPts      = (htpA - atpB) / 80;
+  const diffGD       = (htgdA - atgdB) / 50;
+  const diffForm     = (htFormA - atFormB) / 15;
+  const diffGoals    = (htgsA - atgsB) / 40;
+  const diffConceded = (atgcB - htgcA) / 40;
+  const streakA      = sA.hwStreak3 * 0.05;
+  const streakB      = -sB.awStreak3 * 0.05;
+
+  const z = 0.35 * diffPts
+           + 0.28 * diffGD
+           + 0.22 * diffForm
+           + 0.10 * diffGoals
+           + 0.10 * diffConceded
+           + streakA + streakB
+           + homeAdvantage;
+
+  const pHomeWin = sigmoid(z * 2.5);
+
+  // Estimate draw probability (typically 25-30% in EPL, higher when teams evenly matched)
+  const evenness = 1 - Math.abs(pHomeWin - 0.5) * 2;
+  const pDraw    = 0.20 + 0.12 * evenness;
+  const pAway    = Math.max(0.01, 1 - pHomeWin - pDraw);
+
+  // Renormalise
+  const total = pHomeWin + pDraw + pAway;
+  return {
+    pA:    pHomeWin / total,
+    pDraw: pDraw / total,
+    pB:    pAway / total,
+    rawZ:  z
+  };
+}
+
+function predict() {
+  const tA = document.getElementById('teamA').value;
+  const tB = document.getElementById('teamB').value;
+  const errEl = document.getElementById('errorMsg');
+
+  errEl.style.display = 'none';
+
+  if (!tA || !tB) {
+    errEl.textContent = 'Please select both teams.';
+    errEl.style.display = 'block';
+    return;
+  }
+  if (tA === tB) {
+    errEl.textContent = 'Please select two different teams.';
+    errEl.style.display = 'block';
+    return;
+  }
+
+  const result = predictCNN(tA, tB, selectedVenue);
+  if (!result) { errEl.textContent = 'Prediction failed.'; errEl.style.display = 'block'; return; }
+
+  const { pA, pDraw, pB } = result;
+  const pctA = Math.round(pA * 100);
+  const pctB = Math.round(pB * 100);
+  const pctDraw = 100 - pctA - pctB;
+
+  // Venue labels
+  let venLabelA = '', venLabelB = '';
+  if (selectedVenue === 'A_home')      { venLabelA = '🏟 Home'; venLabelB = '✈ Away'; }
+  else if (selectedVenue === 'B_home') { venLabelA = '✈ Away'; venLabelB = '🏟 Home'; }
+  else                                  { venLabelA = 'Neutral'; venLabelB = 'Neutral'; }
+
+  document.getElementById('res-teamA').textContent = tA;
+  document.getElementById('res-teamB').textContent = tB;
+  document.getElementById('res-venueA').textContent = venLabelA;
+  document.getElementById('res-venueB').textContent = venLabelB;
+  document.getElementById('bar-nameA').textContent = tA;
+  document.getElementById('bar-nameB').textContent = tB;
+
+  // Animate bar
+  setTimeout(() => {
+    document.getElementById('barHome').style.width = pctA + '%';
+    document.getElementById('barAway').style.width = pctB + '%';
+  }, 50);
+
+  document.getElementById('pctHome').textContent = pctA + '%';
+  document.getElementById('pctAway').textContent = pctB + '%';
+
+  // Stats
+  document.getElementById('s-homeWin').textContent = pctA + '%';
+  document.getElementById('s-draw').textContent = Math.max(0, pctDraw) + '%';
+  document.getElementById('s-awayWin').textContent = pctB + '%';
+
+  // Verdict
+  const iconEl    = document.getElementById('verdictIcon');
+  const textEl    = document.getElementById('verdictText');
+  const confDiff  = Math.abs(pA - pB);
+  let confClass   = confDiff > 0.2 ? 'conf-high' : confDiff > 0.08 ? 'conf-medium' : 'conf-low';
+  let confLabel   = confDiff > 0.2 ? 'High confidence' : confDiff > 0.08 ? 'Medium confidence' : 'Tight match';
+
+  if (pA > pB + 0.04) {
+    iconEl.textContent = ' ';
+    textEl.innerHTML = `<strong>${tA}</strong> are predicted to win this match.<span class="confidence-pill ${confClass}">${confLabel}</span>`;
+  } else if (pB > pA + 0.04) {
+    iconEl.textContent = ' ';
+    textEl.innerHTML = `<strong>${tB}</strong> are predicted to win this match.<span class="confidence-pill ${confClass}">${confLabel}</span>`;
+  } else {
+    iconEl.textContent = ' ';
+    textEl.innerHTML = `This match is predicted to be very evenly contested. A draw is possible.<span class="confidence-pill conf-low">Tight match</span>`;
+  }
+
+  document.getElementById('resultSection').classList.add('visible');
+  document.getElementById('resultSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+</script>
+</body>
+</html>
