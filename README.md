@@ -1,10 +1,10 @@
-# ⚽ EPL Match Win Predictor
+# EPL Match Win Predictor
 
 > **LAA Jackfruit** — A full machine learning pipeline for predicting English Premier League match outcomes, progressing from hand-rolled regression through a from-scratch CNN to a production-grade XGBoost model, served via an interactive Streamlit web app.
 
 ---
 
-## 📋 Table of Contents
+## Table of Contents
 
 - [Project Overview](#project-overview)
 - [Dataset](#dataset)
