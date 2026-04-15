@@ -30,6 +30,7 @@ This project predicts whether the **home team wins** (binary classification: Hom
 3. **XGBoost** — a gradient-boosted tree model that achieves the best performance on this tabular dataset.
 4. **Streamlit App** — a polished, interactive web interface for real-time match predictions.
 
+Though we present 3 different models here, the final Streamlit app only uses the production grade XGBoost model training for core prediction mechanism. We have still uploaded the other two models to display our understanding of the concepts and python libraries uploaded.
 ---
 
 ## Dataset
@@ -100,7 +101,7 @@ EPL-Win-Predictor-LAA-Jackfruit/
 
 ---
 
-### Phase 1 — Linear & Logistic Regression from Scratch
+## Phase 1 — Linear & Logistic Regression from Scratch
 
 **Notebook:** `Code/Regression/epl_regression_final.ipynb`
 
@@ -137,7 +138,8 @@ SVD was applied to the training feature matrix `X = U Σ Vᵀ` to understand var
 | Top 10 components | **94.09%** |
 | Total components | 18 |
 
-[screenshot of SVD variance plot — individual variance bar chart + cumulative variance curve with 95% threshold line]
+![alt text](image.png)
+[This is a screenshot of SVD variance plot showing: individual variance bar chart + cumulative variance curve with 95% threshold line]
 
 #### Linear Regression — 4 Models (Ridge, λ=0.1)
 
@@ -152,12 +154,18 @@ Four separate Ridge regression models were trained from scratch using the closed
 
 Goal Difference (using SVD-projected features) achieved the best R² of **0.1435**, confirming that the features carry more signal about the relative performance gap between teams than about absolute goal counts.
 
-[screenshot of Linear Regression — 4-panel Predicted vs Actual scatter plots (home goals, away goals, total goals, goal difference)]
+![alt text](image-1.png)
+![alt text](image-2.png)
+[screenshot of Linear Regression: 4-panel Predicted vs Actual scatter plots (home goals, away goals, total goals, goal difference)]
 
-[screenshot of Linear Regression — 4-panel Residual plots]
+![alt text](image-3.png)
+![alt text](image-4.png)
+[screenshot of Linear Regression: 4-panel Residual plots]
 
+![alt text](image-5.png)
 [screenshot of Linear Regression feature importance bar chart — coefficient magnitudes for Home Goals model]
 
+![alt text](image-6.png)
 [screenshot of Linear Regression — R² and MSE comparison bar charts across 4 models]
 
 #### Logistic Regression — Binary Classification (L2, λ=0.1, 3000 epochs)
@@ -165,6 +173,9 @@ Goal Difference (using SVD-projected features) achieved the best R² of **0.1435
 A binary logistic regression was trained from scratch using gradient descent with binary cross-entropy loss and L2 regularisation. The sigmoid function was applied with clipping (`np.clip(z, -500, 500)`) to prevent numerical overflow.
 
 **Target:** Home Win (FTR == 'H') → 1, otherwise 0
+
+![alt text](image-7.png)
+[Screenshot of Logistic Regression Training Loss: Binary Cross Entropy Loss vs Epoch]
 
 **Test Set Results:**
 
@@ -185,8 +196,10 @@ A binary logistic regression was trained from scratch using gradient descent wit
 
 **Train Set Accuracy:** ~63% (no significant overfitting)
 
+![alt text](image-8.png)
 [screenshot of Logistic Regression evaluation panel — ROC curve (AUC=0.6790), confusion matrix heatmap, predicted probability distribution for Home Win vs No Home Win classes]
 
+![alt text](image-9.png)
 [screenshot of Logistic Regression — feature importance bar chart (logistic coefficients by magnitude)]
 
 #### Gradient Descent vs. Normal Equations
@@ -194,8 +207,10 @@ A binary logistic regression was trained from scratch using gradient descent wit
 Both were implemented for comparison: the normal equations provide an exact closed-form solution in one step via matrix inversion, while gradient descent is iterative and scales better to very large datasets.
 
 ---
+![alt text](image-10.png)
+[screenshot of final exploratory data analysis]
 
-### Phase 2 — Convolutional Neural Network from Scratch
+## Phase 2 — Convolutional Neural Network from Scratch
 
 **Notebook:** `Code/CNN/epl_cnn.ipynb`
 
@@ -240,6 +255,7 @@ Input: (batch, 1, 28)
 | Final train loss | 0.6539 |
 | Final val loss | 0.6732 |
 
+![alt text](image-11.png)
 [screenshot of CNN training loss curves — train loss vs val loss across 80 epochs]
 
 #### CNN Test Set Results
@@ -260,9 +276,8 @@ Input: (batch, 1, 28)
 | **Actual No Win** | 282 | 262 |
 | **Actual Win** | 138 | 344 |
 
-[screenshot of CNN confusion matrix heatmap]
-
-[screenshot of CNN ROC curve]
+![alt text](image-12.png)
+[screenshot of CNN ROC Curve and confusion matrix heatmap]
 
 #### Why CNN Underperformed
 
@@ -274,7 +289,7 @@ The CNN achieved lower accuracy (61.01%) than both Logistic Regression (63.08%) 
 
 ---
 
-### Phase 3 — XGBoost Classifier
+## Phase 3 — XGBoost Classifier
 
 **Notebook:** `Code/XGBoost/epl_xgboost.ipynb`  
 **Saved model:** `Code/XGBoost/epl_xgboost_model.json`
@@ -334,8 +349,10 @@ A **chronological (non-shuffled) split** (`shuffle=False`) was used to simulate 
 | **Accuracy** | **Best among all three models** |
 | **F1 Score** | Strong improvement over CNN and Logistic |
 
+![alt text](image-13.png)
 [screenshot of XGBoost confusion matrix heatmap — showing Not Home Win vs Home Win predictions]
 
+![alt text](image-14.png)
 [screenshot of XGBoost feature importance bar chart — Top 15 most important features by weight]
 
 #### Why XGBoost Won
@@ -384,11 +401,11 @@ The app uses a dark football-themed aesthetic (`#0d1117` background, `Space Grot
 - **Red (`#ff6b6b`)** — Away team
 - **Purple (`#7c12de`)** — Accent / brand colour
 
-[screenshot of Streamlit app — full landing page with team selectors and VS display]
+![alt text](image-15.png)
+[screenshot of Streamlit web app landing page]
 
+![alt text](image-16.png)
 [screenshot of Streamlit app — prediction result for a sample match (e.g. Man United vs Liverpool at Man United's home ground), showing the win probability bar and verdict]
-
-[screenshot of Streamlit app — showing a "Tight Match / Draw likely" prediction for two evenly-matched teams]
 
 ---
 
@@ -468,7 +485,8 @@ streamlit run app.py
 
 The app will open at `http://localhost:8501`. The XGBoost model (`epl_xgboost_model.json`) must be present in the same directory as `app.py`.
 
-[screenshot of Streamlit app running in browser — full page view]
+This landing page should show up:
+![alt text](image-15.png)
 
 ---
 
